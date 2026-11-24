@@ -1,0 +1,445 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Business Process Management Research Artifact",
+  "description": "Schema derived from the BI_Structure_Full taxonomy for classifying research papers and artifacts.",
+  "type": "object",
+  "x-ariadne": {
+    "version": 1,
+    "description": "How Ariadne Lit uses the attributes of this schema. Every attribute can carry an x-ariadne block with a role and a list of uses.",
+    "order": ["type_of_artifact", "research_method", "evaluation_method", "data_type", "threats_to_validity", "implementation", "type_of_inquiry", "type_of_theory", "emphasis", "track", "year"],
+    "filterGroups": [
+      { "id": "core", "label": null, "filters": ["year", "conference", "track", "type_of_artifact"] },
+      { "id": "research", "label": "Research", "filters": ["type_of_inquiry", "type_of_theory", "emphasis", "contribution_elements"] },
+      { "id": "method", "label": "Method & Evaluation", "filters": ["research_method", "evaluation_method"] },
+      { "id": "data", "label": "Threats to Reliability & Validity", "filters": ["data_type", "implementation", "threats_to_validity"] }
+    ],
+    "indicators": {
+      "label": "Empirical & Experimental Evidence",
+      "items": [
+        { "id": "impl_available", "label": "Implementation publicly available", "path": "contribution.artifacts[].implementation.availability", "equals": true },
+        { "id": "impl_exists", "label": "Implementation exists", "path": "contribution.artifacts[].implementation.existence", "equals": true },
+        { "id": "data_accessible", "label": "Data publicly accessible", "path": "contribution.artifacts[].data_collection.data_accessibility", "equals": true },
+        { "id": "material_accessible", "label": "Material publicly accessible", "path": "contribution.artifacts[].data_collection.material_accessibility", "equals": true },
+        { "id": "real_world_data", "label": "Uses real-world data", "path": "contribution.artifacts[].data_collection.data_type", "includes": "real_world_data" },
+        { "id": "ttv", "label": "Reflected threats to validity", "path": "contribution.artifacts[].threats_to_validity", "nonEmpty": true },
+        {
+          "id": "empirical_eval", "label": "Empirical evaluation (beyond verification / examples)", "path": "contribution.artifacts[].evaluation_method",
+          "includesAny": ["controlled_experiment", "field_experiment", "benchmark", "technical_experiment", "case_study", "data_science", "questionnaire", "interview", "focus_group", "grounded_theory"],
+          "valuesLabel": "empirical"
+        },
+        { "id": "participants", "label": "Involves human participants", "path": "contribution.artifacts[].data_collection.participants.total_participants", "greaterThan": 0 }
+      ]
+    },
+    "detail": {
+      "sections": {
+        "contribution.focus_intent": "Focus and Intent",
+        "contribution.artifacts[]": "Contribution"
+      },
+      "hidden": ["contribution.focus_intent.type_of_inquiry"],
+      "showWith": {
+        "contribution.focus_intent.research_question.hidden_in_text": "contribution.focus_intent.research_question.question",
+        "contribution.focus_intent.research_question.highlighted_in_text": "contribution.focus_intent.research_question.question"
+      },
+      "labels": {
+        "contribution.artifacts[].threats_to_validity_other": "Reflection on Other Threat to Validity"
+      },
+      "compare": [
+        "contribution.focus_intent.type_of_inquiry",
+        "contribution.research_components.type_of_theory",
+        "contribution.research_components.emphasis",
+        "contribution.research_components.hypothesis"
+      ]
+    },
+    "settings": {
+      "key": "The name the views use for the attribute, e.g. in links and saved filters. Defaults to the attribute's own name.",
+      "emptyValue": "The value shown when a paper has no value for the attribute. Defaults to a missing value.",
+      "derive": "The name of a calculation that turns the attribute's value into codes (implementationStatus).",
+      "label": "The name shown for the attribute's filter. Defaults to its key, humanized.",
+      "combineAs": "Joins yes/no attributes into one filter of that name, whose values are the attributes that are true.",
+      "order": "On the schema root: the order of the dimensions in the views. Dimensions not listed follow in schema order.",
+      "indicators": "On the schema root: the fixed Trends indicators, each with an id, a label, a path and one test (equals, includes, includesAny, nonEmpty, greaterThan). A per-artifact path counts a paper when any of its artifacts passes.",
+      "detail": "On the schema root: what the paper detail panel and Compare table show. sections names the title of an object's section (default: its name), hidden lists paths not shown, showWith shows a field only when another has a value, labels renames fields (default: the humanized name; name_other fields read \"Other Name\"), compare lists the per-paper rows of the Compare table (default: the per-paper dimensions).",
+      "filterGroups": "On the schema root: the filter groups in order, each with an id, a label (none: each filter gets its own button) and its filters. Filters not listed go into a last group, More.",
+      "valueOrder": "On the Publication Timeline rows attribute: the order of the rows, top first. Rows not listed follow A to Z. Defaults to the attribute's value list."
+    },
+    "roles": {
+      "year": "Fixed: places papers on the Publication Timeline (x-axis) and is the time axis of Trends.",
+      "keywords": "Fixed: connects papers in the Paper Metagraph (shared keywords)."
+    },
+    "uses": {
+      "filters": "Offered as a filter in all views.",
+      "overview.tiles": "Offered under Group by for the tiles on Overview.",
+      "overview.defaultTile": "The attribute the Overview tiles show first (one attribute).",
+      "overview.timelineRows": "The rows of the Publication Timeline (one single-choice attribute).",
+      "metagraph.groups": "Offered under Groups in the Paper Metagraph (single-choice attributes).",
+      "patterns.rowsColumns": "Offered as rows and columns of the Co-occurrence matrix.",
+      "patterns.trends": "Offered as indicators in Trends.",
+      "about.dimension": "Listed under Coding Scheme on the About page.",
+      "similarity": "Compared when ranking Similar Papers."
+    }
+  },
+  "required": ["metadata", "contribution"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["title", "authors", "doi_or_url", "year", "track"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Source paper title"
+        },
+        "authors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paper authors"
+        },
+        "doi_or_url": {
+          "type": "string",
+          "description": "DOI or URL to the paper"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Publication year",
+          "x-ariadne": {"role": "year", "uses": ["filters", "patterns.rowsColumns"]}
+        },
+        "conference_name": {
+          "type": "string",
+          "description": "Full name of the conference the paper was published at, e.g. International Conference on Business Process Management"
+        },
+        "conference_abbreviation": {
+          "type": "string",
+          "description": "Abbreviation of the conference, e.g. BPM",
+          "x-ariadne": {"key": "conference", "uses": ["filters"]}
+        },
+        "track": {
+          "type": "string",
+          "description": "Research track on Business Process Management Conference",
+          "x-ariadne": {"valueOrder": ["Foundations", "Engineering", "Management"], "uses": ["filters", "overview.timelineRows", "metagraph.groups", "patterns.rowsColumns", "patterns.trends"]}
+        }
+      }
+    },
+    "contribution": {
+      "type": "object",
+      "required": ["keywords", "focus_intent", "research_components", "artifacts"],
+      "properties": {
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Author-defined or indexed keywords, highlighted above introduction",
+          "x-ariadne": {"role": "keywords"}
+        },
+        "focus_intent": {
+          "type": "object",
+          "properties": {
+            "goal_paper": {
+              "type": "string",
+              "description": "The main goal or contribution of the paper, as stated by the authors"
+            },
+            "research_question": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "pattern": "^[A-Z].*\\?$",
+                  "description": "The primary question the research seeks to answer"
+                },
+                "hidden_in_text": {
+                  "type": "boolean",
+                  "description": "Whether the research question is explicitly stated in the text or inferred by readers"
+                },
+                "highlighted_in_text": {
+                  "type": "boolean",
+                  "description": "Whether the research question is highlighted in the text (e.g., bolded, italicized, or in a separate section)"
+                }
+              }
+            },
+            "motivation_paper": {
+              "type": "string",
+              "description": "The motivation behind the research, as stated by the authors"
+            },
+            "outcome_paper": {
+              "type": "string",
+              "description": "The main findings or outcomes of the research, as stated by the authors"
+            },
+            "type_of_inquiry": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "formal_science",
+                  "information_systems_engineering",
+                  "scientific_study",
+                  "inductive_study",
+                  "meta_analysis",
+                  "industrial_application"
+                ]
+              },
+              "description": "Categories of inquiry the research belongs to",
+              "x-ariadne": {"uses": ["filters", "overview.tiles", "metagraph.groups", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+            }
+          }
+        },
+        "research_components": {
+          "type": "object",
+          "properties": {
+            "type_of_theory": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": ["formal_theory", "social_science_theory"]
+              },
+              "description": "Type(s) of theory contributed; selecting both indicates a combined contribution",
+              "x-ariadne": {"uses": ["filters", "overview.tiles", "metagraph.groups", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+            },
+            "emphasis": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": ["theory", "artifact"]
+              },
+              "description": "Emphasis of the research; selecting both indicates dual emphasis",
+              "x-ariadne": {"uses": ["filters", "overview.tiles", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+            },
+            "formal_concepts": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the research contributes formal concepts",
+              "x-ariadne": {"combineAs": "contribution_elements", "uses": ["filters"]}
+            },
+            "algorithms": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the research contributes algorithms",
+              "x-ariadne": {"combineAs": "contribution_elements", "uses": ["filters"]}
+            },
+            "hypothesis": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the research contributes hypotheses",
+              "x-ariadne": {"combineAs": "contribution_elements", "uses": ["filters"]}
+            },
+            "independent_variables": {
+              "type": "string",
+              "description": "Independent variables studied in the research"
+            },
+            "dependent_variables": {
+              "type": "string",
+              "description": "Dependent variables studied in the research"
+            }
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "type_of_artifact": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "algorithm",
+                    "tool_implementation",
+                    "prototype",
+                    "method",
+                    "technique",
+                    "language",
+                    "design_concept",
+                    "framework",
+                    "taxonomy",
+                    "model",
+                    "report",
+                    "conceptual_framework",
+                    "experience_report",
+                    "software_product"
+                  ]
+                },
+                "description": "Type(s) of the artifact contributed",
+                "x-ariadne": {"uses": ["filters", "overview.tiles", "overview.defaultTile", "metagraph.groups", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+              },
+              "research_method": {
+                "type": "object",
+                "properties": {
+                  "methods": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "formal_proof",
+                        "survey",
+                        "lab_experiment",
+                        "field_experiment",
+                        "case_study",
+                        "interviews",
+                        "design_science_engineering",
+                        "simulation",
+                        "systematic_review",
+                        "action_research",
+                        "illustrative_example",
+                        "literature_analysis",
+                        "none",
+                        "algorithm_engineering",
+                        "formal_modeling",
+                        "systematic_literature_analysis",
+                        "behavioral_experiment",
+                        "design_science_research",
+                        "other"
+                      ]
+                    },
+                    "description": "Research method(s) employed",
+                    "x-ariadne": {"key": "research_method", "uses": ["filters", "overview.tiles", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+                  },
+                  "other": {
+                    "type": "string",
+                    "description": "Name of the other research method; required when methods includes \"other\""
+                  }
+                },
+                "if": { "properties": { "methods": { "contains": { "const": "other" } } }, "required": ["methods"] },
+                "then": { "required": ["other"], "properties": { "other": { "minLength": 1 } } }
+              },
+              "evaluation_method": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "verification",
+                    "field_experiment",
+                    "benchmark",
+                    "grounded_theory",
+                    "argumentation",
+                    "controlled_experiment",
+                    "data_science",
+                    "focus_group",
+                    "questionnaire",
+                    "interview",
+                    "motivating_example",
+                    "technical_experiment",
+                    "case_study",
+                    "none",
+                    "illustrative_example",
+                    "formal_analysis",
+                    "survey",
+                    "behavioral_experiment",
+                    "other"
+                  ]
+                },
+                "description": "Evaluation method(s) used",
+                "x-ariadne": {"uses": ["filters", "overview.tiles", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+              },
+              "evaluation_method_other": {
+                "type": "string",
+                "description": "Name of the other evaluation method; required when evaluation_method includes \"other\""
+              },
+              "data_collection": {
+                "type": "object",
+                "properties": {
+                  "data_type": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "real_world_data",
+                        "synthetic_data",
+                        "mathematical_formulae",
+                        "undefined"
+                      ]
+                    },
+                    "description": "Type(s) of data used; selecting real_world_data and synthetic_data indicates both",
+                    "x-ariadne": {"uses": ["filters", "overview.tiles", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+                  },
+                  "participants": {
+                    "type": "object",
+                    "properties": {
+                      "total_participants": {
+                        "type": "integer",
+                        "description": "Total number of participants involved in the study, if applicable"
+                      },
+                      "students": {
+                        "type": "integer",
+                        "description": "Number of student participants, if applicable"
+                      },
+                      "practitioners": {
+                        "type": "integer",
+                        "description": "Number of practitioner participants, if applicable"
+                      }
+                    }
+                  },
+                  "material_accessibility": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the materials used in the study are accessible to the public",
+                    "x-ariadne": {"uses": ["patterns.trends"]}
+                  },
+                  "data_accessibility": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the data used in the study is accessible to the public",
+                    "x-ariadne": {"uses": ["patterns.trends"]}
+                  }
+                }
+              },
+              "threats_to_validity": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "internal_validity",
+                    "external_validity",
+                    "construct_validity",
+                    "ecological_validity",
+                    "confirmability",
+                    "reliability",
+                    "repeatability",
+                    "other"
+                  ]
+                },
+                "description": "Threats to validity discussed in the paper",
+                "x-ariadne": {"emptyValue": "none_discussed", "uses": ["filters", "overview.tiles", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]}
+              },
+              "threats_to_validity_other": {
+                "type": "string",
+                "description": "Name of the other threat to validity; required when threats_to_validity includes \"other\""
+              },
+              "implementation": {
+                "type": "object",
+                "x-ariadne": {"derive": "implementationStatus", "uses": ["filters", "overview.tiles", "metagraph.groups", "patterns.rowsColumns", "patterns.trends", "about.dimension", "similarity"]},
+                "properties": {
+                  "existence": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the paper includes an implementation of the artifact"
+                  },
+                  "availability": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the implementation of the artifact is available to the public"
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "evaluation_method": { "contains": { "const": "other" } } }, "required": ["evaluation_method"] },
+                "then": { "required": ["evaluation_method_other"], "properties": { "evaluation_method_other": { "minLength": 1 } } }
+              },
+              {
+                "if": { "properties": { "threats_to_validity": { "contains": { "const": "other" } } }, "required": ["threats_to_validity"] },
+                "then": { "required": ["threats_to_validity_other"], "properties": { "threats_to_validity_other": { "minLength": 1 } } }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
